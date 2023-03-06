@@ -1,0 +1,10 @@
+*.log
+docker-compose.yml
+data
+build.sh
+start.sh
+.DS_Store
+.git/
+.git*
+readme.md
+.github
