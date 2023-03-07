@@ -24,6 +24,7 @@ echo "
 [[ -z "${RUST_SERVER_NAME}" ]] && RUST_SERVER_NAME="Docker Rust"
 [[ -z "${RUST_SERVER_DESCRIPTION}" ]] && RUST_SERVER_DESCRIPTION="This Rust server is going to be awesome!"
 [[ -z "${RUST_SERVER_PORT}" ]] && RUST_SERVER_PORT="28015"
+[[ -z "${RUST_APP_PORT}" ]] && RUST_APP_PORT="28082"
 [[ -z "${RUST_SERVER_LEVEL}" ]] && RUST_SERVER_LEVEL="Procedural Map"
 [[ -z "${RUST_SERVER_IDENTITY}" ]] && RUST_SERVER_IDENTITY="rust"
 [[ -z "${RUST_SERVER_SEED}" ]] && RUST_SERVER_SEED="12345"
@@ -98,7 +99,7 @@ fi
 ## Check if RCON is needed
 ## ==============================================
 if [[ "${RUST_RCON_ENABLE}" = true ]]; then
-  if [[ ! -z "${RUST_RCON_PORT}" ]] && [[ ! -z "${RUST_RCON_PASSWORD}" ]]; then
+  if [[ ! -z "${RUST_RCON_PASSWORD}" ]]; then
 echo "
 ╔═══════════════════════════════════════════════╗
 ║ Enabling RCON                                 ║
@@ -106,7 +107,11 @@ echo "
     echo "- Setting up RCON"
     RUST_RCON_COMMAND="+rcon.port ${RUST_RCON_PORT} +rcon.password ${RUST_RCON_PASSWORD}"
     echo "- Setup completed."
+  else
+    echo "- Please set an RCON password if enabling RCON"
   fi
+else
+  RUST_RCON_COMMAND=""
 fi
 
 
@@ -147,4 +152,6 @@ unbuffer ./RustDedicated -batchmode -nographics \
 +server.worldsize "${RUST_SERVER_WORLDSIZE}" \
 +server.seed "${RUST_SERVER_SEED}" \
 +server.saveinterval "${RUST_SERVER_SAVE_INTERVAL}" \
+${RUST_RCON_COMMAND} \
++app.port "${RUST_APP_PORT}" \
 2>&1 | grep --line-buffered -Ev '^\s*$|Filename' | tee ${GAME_DIR}/logs/${RUST_SERVER_IDENTITY}_logs.txt
