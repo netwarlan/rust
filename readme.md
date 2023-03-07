@@ -23,6 +23,7 @@ Environment Variable | Default Value
 RUST_SERVER_NAME | Docker Rust
 RUST_SERVER_DESCRIPTION | This Rust server is going to be awesome!
 RUST_SERVER_PORT | 28015
+RUST_APP_PORT | 28082
 RUST_SERVER_LEVEL | Procedural Map
 RUST_SERVER_IDENTITY | rust
 RUST_SERVER_SEED | 12345
