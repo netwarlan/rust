@@ -24,7 +24,6 @@ echo "
 [[ -z "${RUST_SERVER_NAME}" ]] && RUST_SERVER_NAME="Docker Rust"
 [[ -z "${RUST_SERVER_DESCRIPTION}" ]] && RUST_SERVER_DESCRIPTION="This Rust server is going to be awesome!"
 [[ -z "${RUST_SERVER_PORT}" ]] && RUST_SERVER_PORT="28015"
-[[ -z "${RUST_APP_PORT}" ]] && RUST_APP_PORT="28082"
 [[ -z "${RUST_SERVER_LEVEL}" ]] && RUST_SERVER_LEVEL="Procedural Map"
 [[ -z "${RUST_SERVER_IDENTITY}" ]] && RUST_SERVER_IDENTITY="rust"
 [[ -z "${RUST_SERVER_SEED}" ]] && RUST_SERVER_SEED="12345"
@@ -40,6 +39,9 @@ echo "
 [[ -z "${RUST_UMOD_UPDATE_ON_BOOT}" ]] && RUST_UMOD_UPDATE_ON_BOOT=false
 [[ -z "${RUST_SERVER_UPDATE_ON_START}" ]] && RUST_SERVER_UPDATE_ON_START=true
 [[ -z "${RUST_SERVER_VALIDATE_ON_START}" ]] && RUST_SERVER_VALIDATE_ON_START=false
+[[ -z "${RUST_SERVER_WIPE_MAP}" ]] && RUST_SERVER_WIPE_MAP=false
+[[ -z "${RUST_SERVER_WIPE_PLAYERS}" ]] && RUST_SERVER_WIPE_PLAYERS=false
+[[ -z "${RUST_SERVER_WIPE_ALL}" ]] && RUST_SERVER_WIPE_ALL=false
 
 
 
@@ -52,8 +54,8 @@ echo "
 ╚═══════════════════════════════════════════════╝"
   if [[ "${RUST_SERVER_VALIDATE_ON_START}" = true ]]; then
     VALIDATE_FLAG='validate'
-    echo "- Validating"
-  else
+    echo " - Validating"
+  else 
     VALIDATE_FLAG=''
   fi
 
@@ -94,12 +96,10 @@ fi
 
 
 
-
-
 ## Check if RCON is needed
-## ==============================================
+## ============================================== 
 if [[ "${RUST_RCON_ENABLE}" = true ]]; then
-  if [[ ! -z "${RUST_RCON_PASSWORD}" ]]; then
+  if [[ ! -z "${RUST_RCON_PORT}" ]] && [[ ! -z "${RUST_RCON_PASSWORD}" ]]; then
 echo "
 ╔═══════════════════════════════════════════════╗
 ║ Enabling RCON                                 ║
@@ -107,11 +107,7 @@ echo "
     echo "- Setting up RCON"
     RUST_RCON_COMMAND="+rcon.port ${RUST_RCON_PORT} +rcon.password ${RUST_RCON_PASSWORD}"
     echo "- Setup completed."
-  else
-    echo "- Please set an RCON password if enabling RCON"
   fi
-else
-  RUST_RCON_COMMAND=""
 fi
 
 
@@ -130,6 +126,30 @@ echo "- Level set complete."
 
 
 
+
+if [[ "${RUST_SERVER_WIPE_MAP}" = true ]] || [[ "${RUST_SERVER_WIPE_PLAYERS}" = true ]] || [[ "${RUST_SERVER_WIPE_ALL}" = true ]]; then
+## Wipe Data
+## ==============================================
+echo "
+╔═══════════════════════════════════════════════╗
+║ Wiping Data                                   ║
+╚═══════════════════════════════════════════════╝"
+  if [[ "${RUST_SERVER_WIPE_ALL}" = true ]]; then
+    RUST_SERVER_WIPE_MAP=true
+    RUST_SERVER_WIPE_PLAYERS=true
+  fi
+
+  if [[ "${RUST_SERVER_WIPE_MAP}" = true ]]; then
+    echo "- Wiping map"
+    find ${GAME_DIR}/server/${RUST_SERVER_IDENTITY} -maxdepth 1 -type f -name "*.map" -delete
+    find ${GAME_DIR}/server/${RUST_SERVER_IDENTITY} -maxdepth 1 -type f -name "*.sav*" -delete
+  fi
+
+  if [[ "${RUST_SERVER_WIPE_PLAYERS}" = true ]]; then
+    echo "- Wiping players"
+    find ${GAME_DIR}/server/${RUST_SERVER_IDENTITY} -maxdepth 1 -type f -name "player.*.db*" -delete
+  fi
+fi
 
 
 
@@ -152,6 +172,4 @@ unbuffer ./RustDedicated -batchmode -nographics \
 +server.worldsize "${RUST_SERVER_WORLDSIZE}" \
 +server.seed "${RUST_SERVER_SEED}" \
 +server.saveinterval "${RUST_SERVER_SAVE_INTERVAL}" \
-${RUST_RCON_COMMAND} \
-+app.port "${RUST_APP_PORT}" \
-2>&1 | grep --line-buffered -Ev '^\s*$|Filename' | tee ${GAME_DIR}/logs/${RUST_SERVER_IDENTITY}_logs.txt
+2>&1 | grep --line-buffered -Ev '^\s*$|Filename' | tee ${GAME_DIR}/rustlog.txt
