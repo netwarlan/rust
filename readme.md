@@ -1,5 +1,4 @@
-# Rust
-              
+# Rust          
 The following repository contains the source files for building a Rust server.
 
 
