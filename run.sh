@@ -34,7 +34,7 @@ echo "
 [[ -z "${RUST_SERVER_SAVE_INTERVAL}" ]] && RUST_SERVER_SAVE_INTERVAL="300"
 [[ -z "${RUST_RCON_ENABLE}" ]] && RUST_RCON_ENABLE=false
 [[ -z "${RUST_RCON_PORT}" ]] && RUST_RCON_PORT="28016"
-[[ ! -z "${RUST_RCON_PASSWORD}" ]] && RUST_RCON_PASSWORD=""
+[[ -z "${RUST_RCON_PASSWORD}" ]] && RUST_RCON_PASSWORD=""
 [[ -z "${RUST_UMOD_ENABLED}" ]] && RUST_UMOD_ENABLED=false
 [[ -z "${RUST_UMOD_UPDATE_ON_BOOT}" ]] && RUST_UMOD_UPDATE_ON_BOOT=false
 [[ -z "${RUST_SERVER_UPDATE_ON_START}" ]] && RUST_SERVER_UPDATE_ON_START=true
@@ -42,6 +42,9 @@ echo "
 [[ -z "${RUST_SERVER_WIPE_MAP}" ]] && RUST_SERVER_WIPE_MAP=false
 [[ -z "${RUST_SERVER_WIPE_PLAYERS}" ]] && RUST_SERVER_WIPE_PLAYERS=false
 [[ -z "${RUST_SERVER_WIPE_ALL}" ]] && RUST_SERVER_WIPE_ALL=false
+[[ -z "${RUST_SERVER_GRANT_ALL_BLUEPRINTS}" ]] && RUST_SERVER_GRANT_ALL_BLUEPRINTS=false
+[[ -z "${RUST_SERVER_GATHER_MANAGER}" ]] && RUST_SERVER_GATHER_MANAGER=false
+[[ -z "${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" ]] && RUST_SERVER_GATHER_MANAGER_MULTIPLIER="2"
 
 
 
@@ -76,6 +79,7 @@ echo "
 ║ Setting up environment                        ║
 ╚═══════════════════════════════════════════════╝"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${GAME_DIR}/RustDedicated_Data/Plugins/x86_64
+echo "## Generated from script" > ${GAME_DIR}/server/rust/cfg/server.cfg
 
 
 
@@ -90,14 +94,42 @@ if [[ "${RUST_UMOD_ENABLED}" = true ]]; then
   echo "- Downloading and installing latest Oxide"
   OXIDE_URL="https://umod.org/games/rust/download/develop"
   curl -sL ${OXIDE_URL} -o ${GAME_DIR}/oxide.zip
-  unzip -o ${GAME_DIR}/oxide.zip -d ${GAME_DIR}
+  unzip -qq -o ${GAME_DIR}/oxide.zip -d ${GAME_DIR}
   rm ${GAME_DIR}/oxide.zip
+
+  if [[ "${RUST_SERVER_GRANT_ALL_BLUEPRINTS}" = true ]]; then
+    echo "- Downloading and installing Blueprint Manager plugin"
+    PLUGIN_BPM_URL="https://umod.org/plugins/BlueprintManager.cs"
+    curl -sL ${PLUGIN_BPM_URL} -o ${GAME_DIR}/oxide/plugins/BlueprintManager.cs
+
+    echo "- Writing server configurations"
+    echo "o.grant group default blueprintmanager.all" >> ${GAME_DIR}/server/rust/cfg/server.cfg
+  fi
+
+  if [[ "${RUST_SERVER_GATHER_MANAGER}" = true ]]; then
+    echo "- Downloading and installing Gather Manager plugin"
+    PLUGIN_GM_URL="https://umod.org/plugins/GatherManager.cs"
+    curl -sL ${PLUGIN_GM_URL} -o ${GAME_DIR}/oxide/plugins/GatherManager.cs
+
+    echo "- Writing server configurations"
+    echo "dispenser.scale tree ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
+    echo "dispenser.scale ore ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
+    echo "dispenser.scale corpse ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
+    echo "gather.rate dispenser Wood ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
+    echo "gather.rate dispenser Stones ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
+    echo "gather.rate dispenser Cloth ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
+    echo "gather.rate quarry Stones ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
+    echo "gather.rate pickup Wood ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
+    echo "gather.rate pickup Stones ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
+  fi
 fi
 
 
 
 ## Check if RCON is needed
-## ============================================== 
+## ==============================================
+RUST_RCON_COMMAND=""
+
 if [[ "${RUST_RCON_ENABLE}" = true ]]; then
   if [[ ! -z "${RUST_RCON_PORT}" ]] && [[ ! -z "${RUST_RCON_PASSWORD}" ]]; then
 echo "
@@ -105,8 +137,7 @@ echo "
 ║ Enabling RCON                                 ║
 ╚═══════════════════════════════════════════════╝"
     echo "- Setting up RCON"
-    RUST_RCON_COMMAND="+rcon.port ${RUST_RCON_PORT} +rcon.password ${RUST_RCON_PASSWORD}"
-    echo "- Setup completed."
+    RUST_RCON_COMMAND="+rcon.ip 0.0.0.0 +rcon.port ${RUST_RCON_PORT} +rcon.password \"${RUST_RCON_PASSWORD}\" +rcon.web 1"
   fi
 fi
 
@@ -172,4 +203,5 @@ unbuffer ./RustDedicated -batchmode -nographics \
 +server.worldsize "${RUST_SERVER_WORLDSIZE}" \
 +server.seed "${RUST_SERVER_SEED}" \
 +server.saveinterval "${RUST_SERVER_SAVE_INTERVAL}" \
+$RUST_RCON_COMMAND \
 2>&1 | grep --line-buffered -Ev '^\s*$|Filename' | tee ${GAME_DIR}/rustlog.txt
