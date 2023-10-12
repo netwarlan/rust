@@ -43,9 +43,11 @@ echo "
 [[ -z "${RUST_SERVER_WIPE_PLAYERS}" ]] && RUST_SERVER_WIPE_PLAYERS=false
 [[ -z "${RUST_SERVER_WIPE_ALL}" ]] && RUST_SERVER_WIPE_ALL=false
 [[ -z "${RUST_SERVER_GRANT_ALL_BLUEPRINTS}" ]] && RUST_SERVER_GRANT_ALL_BLUEPRINTS=false
+[[ -z "${RUST_SERVER_GRANT_ALL_BLUEPRINTS_CONFIG}" ]] && RUST_SERVER_GRANT_ALL_BLUEPRINTS_CONFIG=""
+[[ -z "${RUST_SERVER_DISABLE_WORKBENCHES}" ]] && RUST_SERVER_DISABLE_WORKBENCHES=false
+[[ -z "${RUST_SERVER_DISABLE_WORKBENCHES_CONFIG}" ]] && RUST_SERVER_DISABLE_WORKBENCHES_CONFIG=""
 [[ -z "${RUST_SERVER_GATHER_MANAGER}" ]] && RUST_SERVER_GATHER_MANAGER=false
-[[ -z "${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" ]] && RUST_SERVER_GATHER_MANAGER_MULTIPLIER="2"
-
+[[ -z "${RUST_SERVER_GATHER_MANAGER_CONFIG}" ]] && RUST_SERVER_GATHER_MANAGER_CONFIG=""
 
 
 ## Update on startup
@@ -79,7 +81,6 @@ echo "
 ║ Setting up environment                        ║
 ╚═══════════════════════════════════════════════╝"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${GAME_DIR}/RustDedicated_Data/Plugins/x86_64
-echo "## Generated from script" > ${GAME_DIR}/server/rust/cfg/server.cfg
 
 
 
@@ -103,7 +104,7 @@ if [[ "${RUST_UMOD_ENABLED}" = true ]]; then
     curl -sL ${PLUGIN_BPM_URL} -o ${GAME_DIR}/oxide/plugins/BlueprintManager.cs
 
     echo "- Writing server configurations"
-    echo "o.grant group default blueprintmanager.all" >> ${GAME_DIR}/server/rust/cfg/server.cfg
+    curl -sL ${RUST_SERVER_GRANT_ALL_BLUEPRINTS_CONFIG} -o ${GAME_DIR}/oxide/config/BlueprintManager.json
   fi
 
   if [[ "${RUST_SERVER_GATHER_MANAGER}" = true ]]; then
@@ -112,15 +113,16 @@ if [[ "${RUST_UMOD_ENABLED}" = true ]]; then
     curl -sL ${PLUGIN_GM_URL} -o ${GAME_DIR}/oxide/plugins/GatherManager.cs
 
     echo "- Writing server configurations"
-    echo "dispenser.scale tree ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
-    echo "dispenser.scale ore ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
-    echo "dispenser.scale corpse ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
-    echo "gather.rate dispenser Wood ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
-    echo "gather.rate dispenser Stones ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
-    echo "gather.rate dispenser Cloth ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
-    echo "gather.rate quarry Stones ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
-    echo "gather.rate pickup Wood ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
-    echo "gather.rate pickup Stones ${RUST_SERVER_GATHER_MANAGER_MULTIPLIER}" >> ${GAME_DIR}/server/rust/cfg/server.cfg
+    curl -sL ${RUST_SERVER_GATHER_MANAGER_CONFIG} -o ${GAME_DIR}/oxide/config/GatherManager.json
+  fi
+
+  if [[ "${RUST_SERVER_DISABLE_WORKBENCHES}" = true ]]; then
+    echo "- Downloading and installing No Workbench plugin"
+    PLUGIN_NWB_URL="https://umod.org/plugins/NoWorkbench.cs"
+    curl -sL ${PLUGIN_NWB_URL} -o ${GAME_DIR}/oxide/plugins/NoWorkbench.cs
+
+    echo "- Writing server configurations"
+    curl -sL ${RUST_SERVER_DISABLE_WORKBENCHES_CONFIG} -o ${GAME_DIR}/oxide/config/NoWorkbench.json
   fi
 fi
 
