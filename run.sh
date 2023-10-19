@@ -48,8 +48,11 @@ echo "
 [[ -z "${RUST_UMOD_ENABLED}" ]] && RUST_UMOD_ENABLED=false
 [[ -z "${RUST_UMOD_GATHER_MANAGER_CONFIG}" ]] && RUST_UMOD_GATHER_MANAGER_CONFIG=""
 [[ -z "${RUST_UMOD_GATHER_MANAGER}" ]] && RUST_UMOD_GATHER_MANAGER=false
+[[ -z "${RUST_UMOD_LOGGER_CONFIG}" ]] && RUST_UMOD_LOGGER_CONFIG=""
+[[ -z "${RUST_UMOD_LOGGER}" ]] && RUST_UMOD_LOGGER=false
 [[ -z "${RUST_UMOD_NO_WORKBENCHES_CONFIG}" ]] && RUST_UMOD_NO_WORKBENCHES_CONFIG=""
 [[ -z "${RUST_UMOD_NO_WORKBENCHES}" ]] && RUST_UMOD_NO_WORKBENCHES=false
+
 
 
 ## Update on startup
@@ -119,7 +122,7 @@ if [[ "${RUST_UMOD_ENABLED}" = true ]]; then
     curl -sL ${PLUGIN_URL} -o ${GAME_DIR}/oxide/plugins/BlueprintManager.cs
 
     echo "- Writing server configurations"
-    curl -sL ${RUST_UMOD_BLUEPRINT_MANAGER_CONFIG} -o ${GAME_DIR}/oxide/config/BlueprintManager.json
+    curl -sL ${RUST_UMOD_BLUEPRINT_MANAGER_CONFIG} > ${GAME_DIR}/oxide/config/BlueprintManager.json
   fi
 
   if [[ "${RUST_UMOD_GATHER_MANAGER}" = true ]]; then
@@ -128,7 +131,16 @@ if [[ "${RUST_UMOD_ENABLED}" = true ]]; then
     curl -sL ${PLUGIN_URL} -o ${GAME_DIR}/oxide/plugins/GatherManager.cs
 
     echo "- Writing server configurations"
-    curl -sL ${RUST_UMOD_GATHER_MANAGER_CONFIG} -o ${GAME_DIR}/oxide/config/GatherManager.json
+    curl -sL ${RUST_UMOD_GATHER_MANAGER_CONFIG} > ${GAME_DIR}/oxide/config/GatherManager.json
+  fi
+
+  if [[ "${RUST_UMOD_LOGGER}" = true ]]; then
+    echo "- Downloading and installing \"Logger\" plugin"
+    PLUGIN_URL="https://umod.org/plugins/Logger.cs"
+    curl -sL ${PLUGIN_URL} -o ${GAME_DIR}/oxide/plugins/Logger.cs
+
+    echo "- Writing server configurations"
+    curl -sL ${RUST_UMOD_LOGGER_CONFIG} > ${GAME_DIR}/oxide/config/Logger.json
   fi
 
   if [[ "${RUST_UMOD_NO_WORKBENCHES}" = true ]]; then
@@ -137,7 +149,7 @@ if [[ "${RUST_UMOD_ENABLED}" = true ]]; then
     curl -sL ${PLUGIN_URL} -o ${GAME_DIR}/oxide/plugins/NoWorkbench.cs
 
     echo "- Writing server configurations"
-    curl -sL ${RUST_UMOD_NO_WORKBENCHES_CONFIG} -o ${GAME_DIR}/oxide/config/NoWorkbench.json
+    curl -sL ${RUST_UMOD_NO_WORKBENCHES_CONFIG} > ${GAME_DIR}/oxide/config/NoWorkbench.json
   fi
 fi
 
@@ -168,7 +180,7 @@ if [[ ! -z "${RUST_SERVER_USERS_CONFIG}" ]]; then
 ║ Creating users.cfg                            ║
 ╚═══════════════════════════════════════════════╝"
   echo "- Setting up users.cfg"
-  curl -sL ${RUST_SERVER_USERS_CONFIG} -o ${GAME_DIR}/server/${RUST_SERVER_IDENTITY}/cfg/users.cfg
+  curl -sL ${RUST_SERVER_USERS_CONFIG} > ${GAME_DIR}/server/${RUST_SERVER_IDENTITY}/cfg/users.cfg
 fi
 
 
@@ -181,7 +193,7 @@ if [[ ! -z "${RUST_SERVER_CONFIG}" ]]; then
 ║ Creating server.cfg                           ║
 ╚═══════════════════════════════════════════════╝"
   echo "- Setting up users.cfg"
-  curl -sL ${RUST_SERVER_CONFIG} -o ${GAME_DIR}/server/${RUST_SERVER_IDENTITY}/cfg/server.cfg
+  curl -sL ${RUST_SERVER_CONFIG} > ${GAME_DIR}/server/${RUST_SERVER_IDENTITY}/cfg/server.cfg
 fi
 
 
