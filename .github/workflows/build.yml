@@ -34,7 +34,7 @@ jobs:
           bump-patch-on-unknown: 'true'
 
   build:
-    uses: netwarlan/action-container-build/.github/workflows/build-publish.yaml@v1
+    uses: netwarlan/action-container-build/.github/workflows/build-publish.yaml@main
     secrets: inherit
     with:
       image-name: ${{ github.event.repository.name }}
