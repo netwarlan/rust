@@ -1,4 +1,9 @@
-# Rust          
+# Rust
+
+[![Build](https://img.shields.io/github/actions/workflow/status/netwarlan/rust/build.yml)](https://github.com/netwarlan/rust/actions)
+[![Release](https://img.shields.io/github/v/release/netwarlan/rust)](https://github.com/netwarlan/rust/releases)
+[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/QtqKW9xvzK)
+
 The following repository contains the source files for building a Rust server.
 
 
