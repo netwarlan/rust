@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   version:
     runs-on: ubuntu-latest
@@ -30,10 +34,12 @@ jobs:
           bump-patch-on-unknown: 'true'
 
   build:
-    uses: netwarlan/action-container-build/.github/workflows/build-publish.yaml@main
+    needs: [version]
+    uses: netwarlan/action-container-build/.github/workflows/build-publish.yaml@v1
     secrets: inherit
     with:
       image-name: ${{ github.event.repository.name }}
+      version: ${{ needs.version.outputs.new-version }}
 
   release:
     needs: [version, build]
