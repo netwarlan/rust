@@ -36,6 +36,7 @@ jobs:
   build:
     needs: [version]
     uses: netwarlan/action-container-build/.github/workflows/build-publish.yaml@v1
+    secrets: inherit
     with:
       image-name: ${{ github.event.repository.name }}
       version: ${{ needs.version.outputs.new-version }}
