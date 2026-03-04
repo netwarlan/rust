@@ -37,9 +37,11 @@ RUST_SERVER_PORT="${RUST_SERVER_PORT:-28015}"
 RUST_SERVER_SAVE_INTERVAL="${RUST_SERVER_SAVE_INTERVAL:-300}"
 RUST_SERVER_SEED="${RUST_SERVER_SEED:-12345}"
 RUST_SERVER_UPDATE_ON_START="${RUST_SERVER_UPDATE_ON_START:-true}"
+RUST_SERVER_UPDATE_ONLY_THEN_STOP="${RUST_SERVER_UPDATE_ONLY_THEN_STOP:-false}"
 RUST_SERVER_URL="${RUST_SERVER_URL:-https://netwar.org}"
 RUST_SERVER_USERS_CONFIG="${RUST_SERVER_USERS_CONFIG:-}"
 RUST_SERVER_VALIDATE_ON_START="${RUST_SERVER_VALIDATE_ON_START:-false}"
+RUST_SERVER_VALIDATE_ONLY_THEN_STOP="${RUST_SERVER_VALIDATE_ONLY_THEN_STOP:-false}"
 RUST_SERVER_WIPE_ALL="${RUST_SERVER_WIPE_ALL:-false}"
 RUST_SERVER_WIPE_MAP="${RUST_SERVER_WIPE_MAP:-false}"
 RUST_SERVER_WIPE_PLAYERS="${RUST_SERVER_WIPE_PLAYERS:-false}"
@@ -85,6 +87,33 @@ if [[ ! "$RUST_SERVER_SEED" =~ ^[0-9]+$ ]]; then
   exit 1
 fi
 
+
+
+## Download game files only (without starting server)
+## ==============================================
+if [[ "$RUST_SERVER_UPDATE_ONLY_THEN_STOP" = true ]] || [[ "$RUST_SERVER_VALIDATE_ONLY_THEN_STOP" = true ]]; then
+echo "
+╔═══════════════════════════════════════════════╗
+║ Downloading game files only                   ║
+╚═══════════════════════════════════════════════╝"
+  if [[ "$RUST_SERVER_VALIDATE_ONLY_THEN_STOP" = true ]]; then
+    VALIDATE_FLAG='validate'
+  else
+    VALIDATE_FLAG=''
+  fi
+
+  "$STEAMCMD_DIR/steamcmd.sh" \
+  +force_install_dir "$GAME_DIR" \
+  +login "$STEAMCMD_USER" "$STEAMCMD_PASSWORD" "$STEAMCMD_AUTH_CODE" \
+  +app_update "$STEAMCMD_APP" $VALIDATE_FLAG \
+  +quit
+
+echo "
+╔═══════════════════════════════════════════════╗
+║ Game files downloaded. Stopping container.    ║
+╚═══════════════════════════════════════════════╝"
+  exit 0
+fi
 
 
 ## Update on startup

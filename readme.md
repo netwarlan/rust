@@ -18,6 +18,21 @@ docker run -d \
 ghcr.io/netwarlan/rust
 ```
 
+### Downloading Game Files Only
+To pre-download game files without starting the server (useful for pre-populating volumes):
+```
+docker run --rm -v rust-data:/app/rust \
+-e RUST_SERVER_UPDATE_ONLY_THEN_STOP=true \
+ghcr.io/netwarlan/rust
+```
+
+To download and validate game files:
+```
+docker run --rm -v rust-data:/app/rust \
+-e RUST_SERVER_VALIDATE_ONLY_THEN_STOP=true \
+ghcr.io/netwarlan/rust
+```
+
 ### Environment Variables
 We can make dynamic changes to our Rust containers by adjusting some of the environment variables passed to our image.
 Below are the ones currently supported and their (defaults):
@@ -38,10 +53,12 @@ RUST_SERVER_NAME | Docker Rust | Name of server
 RUST_SERVER_PORT | 28015 | Port used to connect to rust server. (Default is 28015)
 RUST_SERVER_SAVE_INTERVAL | 300 | In seconds, how often the server will save world state
 RUST_SERVER_SEED | 12345 | Seed used to generate random map
-RUST_SERVER_UPDATE_ON_START | true | When server is booting, should Rust game files be updated 
+RUST_SERVER_UPDATE_ON_START | true | When server is booting, should Rust game files be updated
+RUST_SERVER_UPDATE_ONLY_THEN_STOP | false | Download game files only then stop (without starting server)
 RUST_SERVER_URL | https://netwar.org | Server URL
 RUST_SERVER_USERS_CONFIG | n/a | URL where a users.cfg can be used
 RUST_SERVER_VALIDATE_ON_START | false | When server is booting, should Rust validate game files (this will remove OXIDE)
+RUST_SERVER_VALIDATE_ONLY_THEN_STOP | false | Download and validate game files only then stop (without starting server)
 RUST_SERVER_WORLDSIZE | 3000 | Size of the world. (2000 is smallest, 6000 is largest)
 
 
@@ -56,6 +73,8 @@ RUST_UMOD_ENABLED | false | UMOD/Oxide mods enabled or disabled
 RUST_UMOD_BLUEPRINT_MANAGER | false | Installs "Blueprint Manager" plugin
 RUST_UMOD_BLUEPRINT_MANAGER_CONFIG | n/a | URL where to pull a config for "Blueprint Manager" plugin 
 RUST_UMOD_GATHER_MANAGER | false | Installs "Gather Manager" plugin
-RUST_UMOD_GATHER_MANAGER_CONFIG | n/a | URL where to pull a config for "Gather Manager" plugin 
+RUST_UMOD_GATHER_MANAGER_CONFIG | n/a | URL where to pull a config for "Gather Manager" plugin
+RUST_UMOD_LOGGER | false | Installs "Logger" plugin
+RUST_UMOD_LOGGER_CONFIG | n/a | URL where to pull a config for "Logger" plugin
 RUST_UMOD_NO_WORKBENCHES | false | Installs "No Workbenches" plugin
 RUST_UMOD_NO_WORKBENCHES_CONFIG | n/a | URL where to pull a config for "No Workbenches" plugin 
